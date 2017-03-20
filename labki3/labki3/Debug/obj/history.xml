@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<history>
+   <processor signature="arm-none-eabi-gcc noversion nomachine -mcpu=cortex-m4 -mthumb -Wall -ffunction-sections -g -O0 -c -DSTM32F407VG -DSTM32F4XX -DUSE_STDPERIPH_DRIVER -D__ASSEMBLY__ -IC:\Users\Minta\Desktop\Studia\Semek 3\PTM\labki3\cmsis_lib -IC:\Users\Minta\Desktop\Studia\Semek 3\PTM\labki3\cmsis_boot -IC:\Users\Minta\Desktop\Studia\Semek 3\PTM\labki3\cmsis -IC:\Users\Minta\Desktop\Studia\Semek 3\PTM\labki3 -IC:\Users\Minta\Desktop\Studia\Semek 3\PTM -IC:\Users\Minta\Desktop\Studia\Semek 3\PTM\labki3\cmsis_lib\include">
+      <target file="stm32f4xx_tim.o" lastModified="1599edfd3d7">
+         <source file="..\..\..\cmsis_lib\source\stm32f4xx_tim.c" lastModified="157f72850c8"/>
+      </target>
+      <target file="stm32f4xx_rcc.o" lastModified="1599edfcfdb">
+         <source file="..\..\..\cmsis_lib\source\stm32f4xx_rcc.c" lastModified="157f72850c8"/>
+      </target>
+      <target file="system_stm32f4xx.o" lastModified="1599edfd144">
+         <source file="..\..\..\cmsis_boot\system_stm32f4xx.c" lastModified="157f7284ce0"/>
+      </target>
+      <target file="stm32f4xx_gpio.o" lastModified="1599edfd088">
+         <source file="..\..\..\cmsis_lib\source\stm32f4xx_gpio.c" lastModified="157f72850c8"/>
+      </target>
+      <target file="main.o" lastModified="1599f0230eb">
+         <source file="..\..\..\main.c" lastModified="1599f022b8a"/>
+      </target>
+      <target file="startup_stm32f4xx.o" lastModified="1599edfce13">
+         <source file="..\..\..\cmsis_boot\startup\startup_stm32f4xx.c" lastModified="157f72848f8"/>
+      </target>
+   </processor>
+</history>
