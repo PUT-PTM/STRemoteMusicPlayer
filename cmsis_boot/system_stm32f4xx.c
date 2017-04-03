@@ -1,8 +1,3 @@
-system_stm32f4xx.c
-INFORMACJE
-AKTYWNOŒÆ
-Nie zarejestrowano aktywnoœci
-
 /**
   ******************************************************************************
   * @file    system_stm32f4xx.c
