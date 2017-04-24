@@ -1,0 +1,114 @@
+09:52:59.899 [Worker-2] ERROR org.coocox.codb.common.log.ErrorLog - getCompAssociated API failed 
+Connection refused: connect
+java.net.PlainSocketImpl.socketConnect(Native Method)
+java.net.PlainSocketImpl.doConnect(Unknown Source)
+java.net.PlainSocketImpl.connectToAddress(Unknown Source)
+java.net.PlainSocketImpl.connect(Unknown Source)
+java.net.SocksSocketImpl.connect(Unknown Source)
+java.net.Socket.connect(Unknown Source)
+sun.net.NetworkClient.doConnect(Unknown Source)
+sun.net.www.http.HttpClient.openServer(Unknown Source)
+sun.net.www.http.HttpClient.openServer(Unknown Source)
+sun.net.www.http.HttpClient.<init>(Unknown Source)
+sun.net.www.http.HttpClient.New(Unknown Source)
+sun.net.www.http.HttpClient.New(Unknown Source)
+sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(Unknown Source)
+sun.net.www.protocol.http.HttpURLConnection.plainConnect(Unknown Source)
+sun.net.www.protocol.http.HttpURLConnection.connect(Unknown Source)
+org.coocox.codb.common.util.URLConnUtil.doGet(URLConnUtil.java:59)
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.getCompAssociatedFromServer(ComponentApiImpl.java:299)
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.downloadComponent(ComponentApiImpl.java:661)
+org.coocox.component.internal.core.database.ComponentDBCmdHandler.downloadComponent(ComponentDBCmdHandler.java:60)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.performAction(ComponentItemClickListener.java:314)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.access$1(ComponentItemClickListener.java:309)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener$1.run(ComponentItemClickListener.java:88)
+org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+
+
+09:52:59.901 [Worker-2] ERROR org.coocox.codb.common.log.ErrorLog - downloadComponent exception
+getCompAssociated failed
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.getCompAssociatedFromServer(ComponentApiImpl.java:306)
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.downloadComponent(ComponentApiImpl.java:661)
+org.coocox.component.internal.core.database.ComponentDBCmdHandler.downloadComponent(ComponentDBCmdHandler.java:60)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.performAction(ComponentItemClickListener.java:314)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.access$1(ComponentItemClickListener.java:309)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener$1.run(ComponentItemClickListener.java:88)
+org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+
+
+09:53:48.229 [Worker-1] ERROR org.coocox.codb.common.log.ErrorLog - getCompAssociated API failed 
+Connection refused: connect
+java.net.PlainSocketImpl.socketConnect(Native Method)
+java.net.PlainSocketImpl.doConnect(Unknown Source)
+java.net.PlainSocketImpl.connectToAddress(Unknown Source)
+java.net.PlainSocketImpl.connect(Unknown Source)
+java.net.SocksSocketImpl.connect(Unknown Source)
+java.net.Socket.connect(Unknown Source)
+sun.net.NetworkClient.doConnect(Unknown Source)
+sun.net.www.http.HttpClient.openServer(Unknown Source)
+sun.net.www.http.HttpClient.openServer(Unknown Source)
+sun.net.www.http.HttpClient.<init>(Unknown Source)
+sun.net.www.http.HttpClient.New(Unknown Source)
+sun.net.www.http.HttpClient.New(Unknown Source)
+sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(Unknown Source)
+sun.net.www.protocol.http.HttpURLConnection.plainConnect(Unknown Source)
+sun.net.www.protocol.http.HttpURLConnection.connect(Unknown Source)
+org.coocox.codb.common.util.URLConnUtil.doGet(URLConnUtil.java:59)
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.getCompAssociatedFromServer(ComponentApiImpl.java:299)
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.downloadComponent(ComponentApiImpl.java:661)
+org.coocox.component.internal.core.database.ComponentDBCmdHandler.downloadComponent(ComponentDBCmdHandler.java:60)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.performAction(ComponentItemClickListener.java:314)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.access$1(ComponentItemClickListener.java:309)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener$1.run(ComponentItemClickListener.java:88)
+org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+
+
+09:53:48.229 [Worker-1] ERROR org.coocox.codb.common.log.ErrorLog - downloadComponent exception
+getCompAssociated failed
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.getCompAssociatedFromServer(ComponentApiImpl.java:306)
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.downloadComponent(ComponentApiImpl.java:661)
+org.coocox.component.internal.core.database.ComponentDBCmdHandler.downloadComponent(ComponentDBCmdHandler.java:60)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.performAction(ComponentItemClickListener.java:314)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.access$1(ComponentItemClickListener.java:309)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener$1.run(ComponentItemClickListener.java:88)
+org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+
+
+09:54:51.184 [Worker-0] ERROR org.coocox.codb.common.log.ErrorLog - getCompAssociated API failed 
+Connection refused: connect
+java.net.PlainSocketImpl.socketConnect(Native Method)
+java.net.PlainSocketImpl.doConnect(Unknown Source)
+java.net.PlainSocketImpl.connectToAddress(Unknown Source)
+java.net.PlainSocketImpl.connect(Unknown Source)
+java.net.SocksSocketImpl.connect(Unknown Source)
+java.net.Socket.connect(Unknown Source)
+sun.net.NetworkClient.doConnect(Unknown Source)
+sun.net.www.http.HttpClient.openServer(Unknown Source)
+sun.net.www.http.HttpClient.openServer(Unknown Source)
+sun.net.www.http.HttpClient.<init>(Unknown Source)
+sun.net.www.http.HttpClient.New(Unknown Source)
+sun.net.www.http.HttpClient.New(Unknown Source)
+sun.net.www.protocol.http.HttpURLConnection.getNewHttpClient(Unknown Source)
+sun.net.www.protocol.http.HttpURLConnection.plainConnect(Unknown Source)
+sun.net.www.protocol.http.HttpURLConnection.connect(Unknown Source)
+org.coocox.codb.common.util.URLConnUtil.doGet(URLConnUtil.java:59)
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.getCompAssociatedFromServer(ComponentApiImpl.java:299)
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.downloadComponent(ComponentApiImpl.java:661)
+org.coocox.component.internal.core.database.ComponentDBCmdHandler.downloadComponent(ComponentDBCmdHandler.java:60)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.performAction(ComponentItemClickListener.java:314)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.access$1(ComponentItemClickListener.java:309)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener$1.run(ComponentItemClickListener.java:88)
+org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+
+
+09:54:51.184 [Worker-0] ERROR org.coocox.codb.common.log.ErrorLog - downloadComponent exception
+getCompAssociated failed
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.getCompAssociatedFromServer(ComponentApiImpl.java:306)
+org.coocox.codb.client.core.api.impl.ComponentApiImpl.downloadComponent(ComponentApiImpl.java:661)
+org.coocox.component.internal.core.database.ComponentDBCmdHandler.downloadComponent(ComponentDBCmdHandler.java:60)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.performAction(ComponentItemClickListener.java:314)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener.access$1(ComponentItemClickListener.java:309)
+org.coocox.component.manage.ui.extension.ComponentItemClickListener$1.run(ComponentItemClickListener.java:88)
+org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+
+
