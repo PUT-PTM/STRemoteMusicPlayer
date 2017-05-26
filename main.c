@@ -530,7 +530,7 @@ bool isWAV(FILINFO fileInfo)
 	return 0;
 }
 
-int main( void )
+void StartInit()
 {
 	SystemInit();
 	DIODES_init();// inicjalizacja diod
@@ -542,7 +542,26 @@ int main( void )
 	// Systick_Config >> generuje przerwanie co <10ms
 	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);// zegar 24-bitowy
 	SysTick_Config(90000);
+}
 
+void PlayInit()
+{
+	codec_init();
+	codec_ctrl_init();
+	I2S_Cmd(CODEC_I2S, ENABLE);// Integrated Interchip Sound to connect digital devices
+	MY_DMA_initM2P();
+	BUTTON_init();
+	ADC_init();
+	JOINT_VIBRATION();
+	INTERRUPT_init();
+	DIODES_INTERRUPT();
+	RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
+	RNG_Cmd(ENABLE);
+}
+
+int main( void )
+{
+	StartInit();
 	// SD CARD
 	FRESULT fresult;
 	DIR Dir;
@@ -602,17 +621,7 @@ int main( void )
 	first->previous=last;
 	pointer=first;
 
-	codec_init();
-	codec_ctrl_init();
-	I2S_Cmd(CODEC_I2S, ENABLE);// Integrated Interchip Sound to connect digital devices
-	MY_DMA_initM2P();
-	BUTTON_init();
-	ADC_init();
-	JOINT_VIBRATION();
-	INTERRUPT_init();
-	DIODES_INTERRUPT();
-	RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
-	RNG_Cmd(ENABLE);
+	PlayInit();
 	u32 rand_number=0;
 	u32 i_loop=0;
 
