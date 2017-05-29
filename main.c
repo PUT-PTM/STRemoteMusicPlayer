@@ -30,58 +30,66 @@ bool pause=0;
 char song_time[5]={'0', '0', ':', '0', '0'};
 bool half_second=0;
 
-void USART3_IRQHandler(void)
+void USART1_IRQHandler(void)
 {
 	// sprawdzenie flagi zwiazanej z odebraniem danych przez USART
-	if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET)
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
     {
 
-		if(USART3->DR == '1')	num_of_switch=1;
-		if(USART3->DR == '2')	num_of_switch=2;
-		if(USART3->DR == '3')	num_of_switch=3;
-		if(USART3->DR == '4')	num_of_switch=4;
+		if(USART1->DR == '1')	num_of_switch=1;
+		if(USART1->DR == '2')	num_of_switch=2;
+		if(USART1->DR == '3')	num_of_switch=3;
+		if(USART1->DR == '4')	num_of_switch=4;
 		TIM_Cmd(TIM5, ENABLE);
 
 
-		// odebrany bajt znajduje sie w rejestrze USART3->DR
-		while(USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
+		// odebrany bajt znajduje sie w rejestrze USART1->DR
+		while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
 		// wyslanie danych
-		USART_SendData(USART3, (char)(USART3->DR - 32));
+		USART_SendData(USART1, (char)(USART1->DR - 32));
 		// czekaj az dane zostana wyslane
-		while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
+		while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
 
-		USART_ClearFlag(USART3, USART_IT_RXNE);
+		USART_ClearFlag(USART1, USART_IT_RXNE);
 	}
 }
 
 void USART_init()
 {
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+	//RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART6, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
 	// konfiguracja linii Rx i Tx
+		/**/RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+
+		/**
+		* Tell pins PA9 and PA10 which alternating function you will use
+		* @important Make sure, these lines are before pins configuration!
+		*/
+		GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
+		GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
+		// Initialize pins as alternating function
 		GPIO_InitTypeDef GPIO_InitStructureUSART;
-		GPIO_InitStructureUSART.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
+		GPIO_InitStructureUSART.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;
 		GPIO_InitStructureUSART.GPIO_Mode = GPIO_Mode_AF;
 		GPIO_InitStructureUSART.GPIO_OType = GPIO_OType_PP;
 		GPIO_InitStructureUSART.GPIO_PuPd = GPIO_PuPd_UP;
 		GPIO_InitStructureUSART.GPIO_Speed = GPIO_Speed_50MHz;
-		GPIO_Init(GPIOC, &GPIO_InitStructureUSART);/*
-		// ustawienie funkcji alternatywnej dla pinów (USART)
-		GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_USART3);
-		GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_USART3);
-*/
+		GPIO_Init(GPIOA, &GPIO_InitStructureUSART);
+
+
 		//struktura do konfiguracji kontrolera NVIC
-		NVIC_InitTypeDef NVIC_InitStructureU;
+		NVIC_InitTypeDef NVIC_InitStructureUSART;
 		// wlaczenie przerwania zwi¹zanego z odebraniem danych (pozostale zrodla przerwan zdefiniowane sa w pliku stm32f4xx_usart.h)
-		USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
-		NVIC_InitStructureU.NVIC_IRQChannel = USART3_IRQn;
-		NVIC_InitStructureU.NVIC_IRQChannelPreemptionPriority = 0;
-		NVIC_InitStructureU.NVIC_IRQChannelSubPriority = 0;
-		NVIC_InitStructureU.NVIC_IRQChannelCmd = ENABLE;
+		USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+		NVIC_InitStructureUSART.NVIC_IRQChannel = USART1_IRQn;
+		NVIC_InitStructureUSART.NVIC_IRQChannelPreemptionPriority = 0;
+		NVIC_InitStructureUSART.NVIC_IRQChannelSubPriority = 0;
+		NVIC_InitStructureUSART.NVIC_IRQChannelCmd = ENABLE;
 		// konfiguracja kontrolera przerwan
-		NVIC_Init(&NVIC_InitStructureU);
+		NVIC_Init(&NVIC_InitStructureUSART);
 		// wlaczenie przerwan od ukladu USART
-		NVIC_EnableIRQ(USART3_IRQn);
+		NVIC_EnableIRQ(USART1_IRQn);
 
 		USART_InitTypeDef USART_InitStructure;
 		// predkosc transmisji (mozliwe standardowe opcje: 9600, 19200, 38400, 57600, 115200, ...)
@@ -98,10 +106,10 @@ void USART_init()
 		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
 		// konfiguracja
-		USART_Init(USART3, &USART_InitStructure);
+		USART_Init(USART1, &USART_InitStructure);
 
 		// wlaczenie ukladu USART
-		USART_Cmd(USART3, ENABLE);
+		USART_Cmd(USART1, ENABLE);
 }
 
 void TIM2_IRQHandler(void)
