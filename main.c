@@ -1,6 +1,7 @@
 #include "stm32f4xx.h"
 #include "system_stm32f4xx.h"
 #include "stm32f4xx_syscfg.h"
+#include "stm32f4xx_usart.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_conf.h"
 #include "stm32f4xx_exti.h"
@@ -29,37 +30,80 @@ bool pause=0;
 char song_time[5]={'0', '0', ':', '0', '0'};
 bool half_second=0;
 
-void EXTI0_IRQHandler(void)
+void USART3_IRQHandler(void)
 {
-	// drgania stykow
-	if(EXTI_GetITStatus(EXTI_Line0) != RESET)
-	{
-		num_of_switch=0;
+	// sprawdzenie flagi zwiazanej z odebraniem danych przez USART
+	if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET)
+    {
+
+		if(USART3->DR == '1')	num_of_switch=1;
+		if(USART3->DR == '2')	num_of_switch=2;
+		if(USART3->DR == '3')	num_of_switch=3;
+		if(USART3->DR == '4')	num_of_switch=4;
 		TIM_Cmd(TIM5, ENABLE);
-		EXTI_ClearITPendingBit(EXTI_Line0);
+
+
+		// odebrany bajt znajduje sie w rejestrze USART3->DR
+		while(USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
+		// wyslanie danych
+		USART_SendData(USART3, (char)(USART3->DR - 32));
+		// czekaj az dane zostana wyslane
+		while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
+
+		USART_ClearFlag(USART3, USART_IT_RXNE);
 	}
 }
-void EXTI9_5_IRQHandler(void)
+
+void USART_init()
 {
-	if(EXTI_GetITStatus(EXTI_Line5) != RESET)
-	{
-		num_of_switch=5;
-		TIM_Cmd(TIM5, ENABLE);
-		EXTI_ClearITPendingBit(EXTI_Line5);
-	}
-	else if(EXTI_GetITStatus(EXTI_Line7) != RESET)
-	{
-		num_of_switch=7;
-		TIM_Cmd(TIM5, ENABLE);
-		EXTI_ClearITPendingBit(EXTI_Line7);
-	}
-	else if(EXTI_GetITStatus(EXTI_Line8) != RESET)
-	{
-		num_of_switch=8;
-		TIM_Cmd(TIM5, ENABLE);
-		EXTI_ClearITPendingBit(EXTI_Line8);
-	}
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+
+	// konfiguracja linii Rx i Tx
+		GPIO_InitTypeDef GPIO_InitStructureUSART;
+		GPIO_InitStructureUSART.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
+		GPIO_InitStructureUSART.GPIO_Mode = GPIO_Mode_AF;
+		GPIO_InitStructureUSART.GPIO_OType = GPIO_OType_PP;
+		GPIO_InitStructureUSART.GPIO_PuPd = GPIO_PuPd_UP;
+		GPIO_InitStructureUSART.GPIO_Speed = GPIO_Speed_50MHz;
+		GPIO_Init(GPIOC, &GPIO_InitStructureUSART);/*
+		// ustawienie funkcji alternatywnej dla pinów (USART)
+		GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_USART3);
+		GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_USART3);
+*/
+		//struktura do konfiguracji kontrolera NVIC
+		NVIC_InitTypeDef NVIC_InitStructureU;
+		// wlaczenie przerwania zwi¹zanego z odebraniem danych (pozostale zrodla przerwan zdefiniowane sa w pliku stm32f4xx_usart.h)
+		USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+		NVIC_InitStructureU.NVIC_IRQChannel = USART3_IRQn;
+		NVIC_InitStructureU.NVIC_IRQChannelPreemptionPriority = 0;
+		NVIC_InitStructureU.NVIC_IRQChannelSubPriority = 0;
+		NVIC_InitStructureU.NVIC_IRQChannelCmd = ENABLE;
+		// konfiguracja kontrolera przerwan
+		NVIC_Init(&NVIC_InitStructureU);
+		// wlaczenie przerwan od ukladu USART
+		NVIC_EnableIRQ(USART3_IRQn);
+
+		USART_InitTypeDef USART_InitStructure;
+		// predkosc transmisji (mozliwe standardowe opcje: 9600, 19200, 38400, 57600, 115200, ...)
+		USART_InitStructure.USART_BaudRate = 9600;
+		// d³ugoœæ s³owa (USART_WordLength_8b lub USART_WordLength_9b)
+		USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+		// liczba bitów stopu (USART_StopBits_1, USART_StopBits_0_5, USART_StopBits_2, USART_StopBits_1_5)
+		USART_InitStructure.USART_StopBits = USART_StopBits_1;
+		// sprawdzanie parzystoœci (USART_Parity_No, USART_Parity_Even, USART_Parity_Odd)
+		USART_InitStructure.USART_Parity = USART_Parity_No;
+		// sprzêtowa kontrola przep³ywu (USART_HardwareFlowControl_None, USART_HardwareFlowControl_RTS, USART_HardwareFlowControl_CTS, USART_HardwareFlowControl_RTS_CTS)
+		USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+		// tryb nadawania/odbierania (USART_Mode_Rx, USART_Mode_Rx )
+		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+
+		// konfiguracja
+		USART_Init(USART3, &USART_InitStructure);
+
+		// wlaczenie ukladu USART
+		USART_Cmd(USART3, ENABLE);
 }
+
 void TIM2_IRQHandler(void)
 {
 	if(TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET)
@@ -138,15 +182,11 @@ void TIM5_IRQHandler(void)
 	if(TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET)
 	{
 		// miejsce na kod wywolywany w momencie wystapienia przerwania, drgania stykow
-		if (num_of_switch==0)// wcisnieto user button 0 - losowe odtwarzanie
+		if (num_of_switch==1)// otrzyma³ sygna³ 1 - losowe odtwarzanie
 		{
 			random_mode = (random_mode + 1) % 2;
 		}
-		else if (num_of_switch==5)// wcisnieto switch 5 - przewijanie do przodu
-		{
-			change_song=1;
-		}
-		else if (num_of_switch==7)// wcisnieto switch 7 - pauzuj/wznow
+		else if (num_of_switch==2)// otrzyma³ sygna³ 2 - pauzuj/wznow
 		{
 			if(pause==0)
 			{
@@ -163,9 +203,13 @@ void TIM5_IRQHandler(void)
 				NVIC_SystemLPConfig(NVIC_LP_SLEEPONEXIT, DISABLE);
 			}
 		}
-		else if (num_of_switch==8)// wcisnieto switch 8 - przewijanie wstecz
+		else if (num_of_switch==3)// otrzyma³ sygna³ 3 - przewijanie wstecz
 		{
 			change_song=-1;
+		}
+		else if (num_of_switch==4)// otrzyma³ sygna³ 4 - przewijanie do przodu
+		{
+			change_song=1;
 		}
 		num_of_switch=-1;
 		TIM_Cmd(TIM5, DISABLE);
@@ -180,8 +224,8 @@ void ERROR_TIM_4()
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 	TIM_TimeBaseInitTypeDef TIMER_4;
 	/* Time base configuration */
-	TIMER_4.TIM_Period = 24000-1;
-	TIMER_4.TIM_Prescaler = 1000-1;
+	TIMER_4.TIM_Period = 23999;
+	TIMER_4.TIM_Prescaler = 999;
 	TIMER_4.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIMER_4.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(TIM4, &TIMER_4);
@@ -197,31 +241,6 @@ void ERROR_TIM_4()
 	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);// wyczyszczenie przerwania od timera 4 (wystapilo przy konfiguracji timera)
 	TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);// zezwolenie na przerwania od przepelnienia dla timera 4
 }
-void JOINT_VIBRATION()
-{
-	// TIMER DO ELIMINACJI DRGAN STYKOW, TIM5
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
-
-	TIM_TimeBaseInitTypeDef TIMER;
-	/* Time base configuration */
-	TIMER.TIM_Period = 8400-1;
-	TIMER.TIM_Prescaler = 3000-1;
-	TIMER.TIM_ClockDivision = TIM_CKD_DIV1;
-	TIMER.TIM_CounterMode = TIM_CounterMode_Up;
-
-	TIM_TimeBaseInit(TIM5, &TIMER);
-	TIM_Cmd(TIM5,DISABLE);
-
-	// KONFIGURACJA PRZERWAN - TIMER/COUNTER
-	NVIC_InitTypeDef NVIC_InitStructure;
-	NVIC_InitStructure.NVIC_IRQChannel = TIM5_IRQn;// numer przerwania
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;// priorytet glowny
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;// subpriorytet
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;// uruchom dany kanal
-	NVIC_Init(&NVIC_InitStructure);// zapisz wypelniona strukture do rejestrow
-	TIM_ClearITPendingBit(TIM5, TIM_IT_Update);// wyczyszczenie przerwania od timera 5 (wystapilo przy konfiguracji timera)
-	TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);// zezwolenie na przerwania od przepelnienia dla timera 5
-}
 void DIODES_INTERRUPT()
 {
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
@@ -236,8 +255,8 @@ void DIODES_INTERRUPT()
 	NVIC_Init(&NVIC_InitStructure);// zapisz wypelniona strukture do rejestrow
 
 	TIM_TimeBaseInitTypeDef TIMER_3;
-	TIMER_3.TIM_Period = 48000-1;// okres zliczania nie przekroczyc 2^16!
-	TIMER_3.TIM_Prescaler = 1000-1;// wartosc preskalera, tutaj bardzo mala
+	TIMER_3.TIM_Period = 47999;// okres zliczania nie przekroczyc 2^16!
+	TIMER_3.TIM_Prescaler = 999;// wartosc preskalera, tutaj bardzo mala
 	TIMER_3.TIM_ClockDivision = TIM_CKD_DIV1;// dzielnik zegara
 	TIMER_3.TIM_CounterMode = TIM_CounterMode_Up;// kierunek zliczania
 	TIM_TimeBaseInit(TIM3, &TIMER_3);
@@ -318,51 +337,6 @@ void spin_diodes()
 		diode_state=1;
 	}
 }
-void BUTTON_init()
-{
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA , ENABLE);
-	/*0 - tryb losowy
-	  5 - przewijanie wstecz
-	  6 - start/stop
-	  7 - przewijanie do przodu*/
-	GPIO_InitTypeDef USER_BUTTON;
-	USER_BUTTON.GPIO_Pin = GPIO_Pin_0;
-	USER_BUTTON.GPIO_Mode = GPIO_Mode_IN;
-	USER_BUTTON.GPIO_PuPd = GPIO_PuPd_NOPULL;
-	GPIO_Init(GPIOA, &USER_BUTTON);
-
-	USER_BUTTON.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_7 | GPIO_Pin_8;
-	USER_BUTTON.GPIO_PuPd = GPIO_PuPd_DOWN;
-	GPIO_Init(GPIOA, &USER_BUTTON);
-}
-void INTERRUPT_init()
-{
-	// KONFIGURACJA KONTROLERA PRZERWAN
-	NVIC_InitTypeDef NVIC_InitStructure;
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI0_IRQn; // numer przerwania
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;// priorytet glowny
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;// subpriorytet
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;// uruchom dany kanal
-	NVIC_Init(&NVIC_InitStructure);// zapisz wypelniona strukture do rejestrow
-
-	EXTI_InitTypeDef EXTI_InitStructure;
-	EXTI_InitStructure.EXTI_Line = EXTI_Line0;// wybor numeru aktualnie konfigurowanej linii przerwan
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;// wybor trybu - przerwanie badz zdarzenie
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;// wybor zbocza, na ktore zareaguje przerwanie
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;// uruchom dana linie przerwan
-	EXTI_Init(&EXTI_InitStructure);// zapisz strukture konfiguracyjna przerwan zewnetrznych do rejestrow
-
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource0);
-
-	// KONFIGURACJA KONTROLERA PRZERWAN DLA SWITCH Pin_5, Pin_6, Pin_7
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI9_5_IRQn;
-	EXTI_InitStructure.EXTI_Line = EXTI_Line5 | EXTI_Line7 | EXTI_Line8;
-	NVIC_Init(&NVIC_InitStructure);
-	EXTI_Init(&EXTI_InitStructure);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource5);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource7);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOA, EXTI_PinSource8);
-}
 void MY_DMA_initM2P()
 {
 	DMA_InitTypeDef  DMA_InitStructure;
@@ -398,14 +372,39 @@ void ADC_conversion()
 	while(ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET);
 	result_of_conversion = ((ADC_GetConversionValue(ADC1))/16);
 }
+void TIM5_Init()
+{
+	// TIMER DO ELIMINACJI DRGAN STYKOW, TIM5
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5, ENABLE);
+
+	TIM_TimeBaseInitTypeDef TIMER;
+	/* Time base configuration */
+	TIMER.TIM_Period = 8399;
+	TIMER.TIM_Prescaler = 2999;
+	TIMER.TIM_ClockDivision = TIM_CKD_DIV1;
+	TIMER.TIM_CounterMode = TIM_CounterMode_Up;
+
+	TIM_TimeBaseInit(TIM5, &TIMER);
+	TIM_Cmd(TIM5,DISABLE);
+
+	// KONFIGURACJA PRZERWAN - TIMER/COUNTER
+	NVIC_InitTypeDef NVIC_InitStructure5;
+	NVIC_InitStructure5.NVIC_IRQChannel = TIM5_IRQn;// numer przerwania
+	NVIC_InitStructure5.NVIC_IRQChannelPreemptionPriority = 0x00;// priorytet glowny
+	NVIC_InitStructure5.NVIC_IRQChannelSubPriority = 0x00;// subpriorytet
+	NVIC_InitStructure5.NVIC_IRQChannelCmd = ENABLE;// uruchom dany kanal
+	NVIC_Init(&NVIC_InitStructure5);// zapisz wypelniona strukture do rejestrow
+	TIM_ClearITPendingBit(TIM5, TIM_IT_Update);// wyczyszczenie przerwania od timera 5 (wystapilo przy konfiguracji timera)
+	TIM_ITConfig(TIM5, TIM_IT_Update, ENABLE);// zezwolenie na przerwania od przepelnienia dla timera 5
+}
 void TIM2_ADC_init()
 {
 	// Wejscie do przerwania od TIM2 co <0.05 s
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
 	// 2. UTWORZENIE STRUKTURY KONFIGURACYJNEJ
 	TIM_TimeBaseInitTypeDef TIMER_2;
-	TIMER_2.TIM_Period = 2100-1;// okres zliczania nie przekroczyc 2^16!
-	TIMER_2.TIM_Prescaler = 2000-1;// wartosc preskalera, tutaj bardzo mala
+	TIMER_2.TIM_Period = 2999;// okres zliczania nie przekroczyc 2^16!
+	TIMER_2.TIM_Prescaler = 1999;// wartosc preskalera, tutaj bardzo mala
 	TIMER_2.TIM_ClockDivision = TIM_CKD_DIV1;// dzielnik zegara
 	TIMER_2.TIM_CounterMode = TIM_CounterMode_Up;// kierunek zliczania
 	TIM_TimeBaseInit(TIM2, &TIMER_2);
@@ -498,7 +497,7 @@ void play_wav(struct List *song, FRESULT fresult)
 		song_time[2]=':';
 		half_second=0;
 		TIM_Cmd(TIM3, ENABLE);
-		while(1)
+		while(!pause)
 		{
 			if (read_and_send(fresult,0, it_status, read_bytes, DMA_FLAG_HTIF5)==0)
 			{
@@ -550,10 +549,9 @@ void PlayInit()
 	codec_ctrl_init();
 	I2S_Cmd(CODEC_I2S, ENABLE);// Integrated Interchip Sound to connect digital devices
 	MY_DMA_initM2P();
-	BUTTON_init();
 	ADC_init();
-	JOINT_VIBRATION();
-	INTERRUPT_init();
+	USART_init();
+	TIM5_Init();
 	DIODES_INTERRUPT();
 	RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
 	RNG_Cmd(ENABLE);
@@ -566,7 +564,7 @@ int main( void )
 	FRESULT fresult;
 	DIR Dir;
 	FILINFO fileInfo;
-	FIL plik;
+	//FIL plik;
 
 	struct List *first=0,*last=0,*pointer;
 
@@ -596,7 +594,7 @@ int main( void )
 		{
 			break;
 		}
-		int zmienna;
+		//int zmienna;
 
 		if(isWAV(fileInfo)==1)// sprawdzenie, czy plik na karcie ma rozszerzenie .wav
 		{
