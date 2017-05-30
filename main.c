@@ -56,19 +56,9 @@ void USART1_IRQHandler(void)
 
 void USART_init()
 {
-	//RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART6, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
 
 	// konfiguracja linii Rx i Tx
-		/**/RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-
-		/**
-		* Tell pins PA9 and PA10 which alternating function you will use
-		* @important Make sure, these lines are before pins configuration!
-		*/
-		GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
-		GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
-		// Initialize pins as alternating function
 		GPIO_InitTypeDef GPIO_InitStructureUSART;
 		GPIO_InitStructureUSART.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;
 		GPIO_InitStructureUSART.GPIO_Mode = GPIO_Mode_AF;
@@ -76,31 +66,33 @@ void USART_init()
 		GPIO_InitStructureUSART.GPIO_PuPd = GPIO_PuPd_UP;
 		GPIO_InitStructureUSART.GPIO_Speed = GPIO_Speed_50MHz;
 		GPIO_Init(GPIOA, &GPIO_InitStructureUSART);
-
+		// ustawienie funkcji alternatywnej dla pinÃ³w (USART)
+		GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1);
+		GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1);
 
 		//struktura do konfiguracji kontrolera NVIC
-		NVIC_InitTypeDef NVIC_InitStructureUSART;
-		// wlaczenie przerwania zwi¹zanego z odebraniem danych (pozostale zrodla przerwan zdefiniowane sa w pliku stm32f4xx_usart.h)
+		NVIC_InitTypeDef NVIC_InitStructureU;
+		// wlaczenie przerwania zwiÂ¹zanego z odebraniem danych (pozostale zrodla przerwan zdefiniowane sa w pliku stm32f4xx_usart.h)
 		USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-		NVIC_InitStructureUSART.NVIC_IRQChannel = USART1_IRQn;
-		NVIC_InitStructureUSART.NVIC_IRQChannelPreemptionPriority = 0;
-		NVIC_InitStructureUSART.NVIC_IRQChannelSubPriority = 0;
-		NVIC_InitStructureUSART.NVIC_IRQChannelCmd = ENABLE;
+		NVIC_InitStructureU.NVIC_IRQChannel = USART1_IRQn;
+		NVIC_InitStructureU.NVIC_IRQChannelPreemptionPriority = 0;
+		NVIC_InitStructureU.NVIC_IRQChannelSubPriority = 0;
+		NVIC_InitStructureU.NVIC_IRQChannelCmd = ENABLE;
 		// konfiguracja kontrolera przerwan
-		NVIC_Init(&NVIC_InitStructureUSART);
+		NVIC_Init(&NVIC_InitStructureU);
 		// wlaczenie przerwan od ukladu USART
 		NVIC_EnableIRQ(USART1_IRQn);
 
 		USART_InitTypeDef USART_InitStructure;
 		// predkosc transmisji (mozliwe standardowe opcje: 9600, 19200, 38400, 57600, 115200, ...)
 		USART_InitStructure.USART_BaudRate = 9600;
-		// d³ugoœæ s³owa (USART_WordLength_8b lub USART_WordLength_9b)
+		// dÂ³ugoÅ“Ã¦ sÂ³owa (USART_WordLength_8b lub USART_WordLength_9b)
 		USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-		// liczba bitów stopu (USART_StopBits_1, USART_StopBits_0_5, USART_StopBits_2, USART_StopBits_1_5)
+		// liczba bitÃ³w stopu (USART_StopBits_1, USART_StopBits_0_5, USART_StopBits_2, USART_StopBits_1_5)
 		USART_InitStructure.USART_StopBits = USART_StopBits_1;
-		// sprawdzanie parzystoœci (USART_Parity_No, USART_Parity_Even, USART_Parity_Odd)
+		// sprawdzanie parzystoÅ“ci (USART_Parity_No, USART_Parity_Even, USART_Parity_Odd)
 		USART_InitStructure.USART_Parity = USART_Parity_No;
-		// sprzêtowa kontrola przep³ywu (USART_HardwareFlowControl_None, USART_HardwareFlowControl_RTS, USART_HardwareFlowControl_CTS, USART_HardwareFlowControl_RTS_CTS)
+		// sprzÃªtowa kontrola przepÂ³ywu (USART_HardwareFlowControl_None, USART_HardwareFlowControl_RTS, USART_HardwareFlowControl_CTS, USART_HardwareFlowControl_RTS_CTS)
 		USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 		// tryb nadawania/odbierania (USART_Mode_Rx, USART_Mode_Rx )
 		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
@@ -190,11 +182,11 @@ void TIM5_IRQHandler(void)
 	if(TIM_GetITStatus(TIM5, TIM_IT_Update) != RESET)
 	{
 		// miejsce na kod wywolywany w momencie wystapienia przerwania, drgania stykow
-		if (num_of_switch==1)// otrzyma³ sygna³ 1 - losowe odtwarzanie
+		if (num_of_switch==1)// otrzymaÂ³ sygnaÂ³ 1 - losowe odtwarzanie
 		{
 			random_mode = (random_mode + 1) % 2;
 		}
-		else if (num_of_switch==2)// otrzyma³ sygna³ 2 - pauzuj/wznow
+		else if (num_of_switch==2)// otrzymaÂ³ sygnaÂ³ 2 - pauzuj/wznow
 		{
 			if(pause==0)
 			{
@@ -211,11 +203,11 @@ void TIM5_IRQHandler(void)
 				NVIC_SystemLPConfig(NVIC_LP_SLEEPONEXIT, DISABLE);
 			}
 		}
-		else if (num_of_switch==3)// otrzyma³ sygna³ 3 - przewijanie wstecz
+		else if (num_of_switch==3)// otrzymaÂ³ sygnaÂ³ 3 - przewijanie wstecz
 		{
 			change_song=-1;
 		}
-		else if (num_of_switch==4)// otrzyma³ sygna³ 4 - przewijanie do przodu
+		else if (num_of_switch==4)// otrzymaÂ³ sygnaÂ³ 4 - przewijanie do przodu
 		{
 			change_song=1;
 		}
@@ -680,3 +672,4 @@ void SysTick_Handler()
 {
 	disk_timerproc();
 }
+
